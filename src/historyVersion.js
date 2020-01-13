@@ -54,35 +54,59 @@ function Square(props) {
     constructor(props) {
       super(props);
       this.state = {
-        squares: Array(9).fill(null),
+        history: [
+          {
+            squares: Array(9).fill(null)
+          }
+        ],
+        stepNumber: 0,
         xIsNext: true
       };
     }
   
     handleClick(i) {
-      const squares = this.state.squares.slice();
+      const history = this.state.history.slice(0, this.state.stepNumber + 1);
+      const current = history[history.length - 1];
+      const squares = current.squares.slice();
       const winInfo = calculateWinner(squares);
       if (winInfo.winner || squares[i]) {
         return;
       }
       squares[i] = this.state.xIsNext ? "X" : "O";
       this.setState({
-        squares: squares,
+        history: history.concat([
+          {
+            squares: squares
+          }
+        ]),
+        stepNumber: history.length,
         xIsNext: !this.state.xIsNext
       });
     }
   
-   restart(){
-    this.setState({
-        squares: Array(9).fill(null),
-
-   })}
+    jumpTo(step) {
+      this.setState({
+        stepNumber: step,
+        xIsNext: (step % 2) === 0
+      });
+    }
   
     render() {
-      const squares = this.state.squares.slice();
-      const winInfo = calculateWinner(squares);
+      const history = this.state.history;
+      const current = history[this.state.stepNumber];
+      const winInfo = calculateWinner(current.squares);
       const winner = winInfo.winner;
-   
+  
+      const moves = history.map((step, move) => {
+        const desc = move ?
+          'Go to move #' + move :
+          'Go to game start';
+        return (
+          <li key={move}>
+            <button onClick={() => this.jumpTo(move)}>{desc}</button>
+          </li>
+        );
+      });
   
       let status;
       if (winner) {
@@ -90,7 +114,7 @@ function Square(props) {
       } else {
         status = "Next player: " + (this.state.xIsNext ? "X" : "O");
       }
-      if(squares.every(element => element != null) && !winner){
+      if(current.squares.every(element => element != null) && !winner){
          status = "Game ended in a draw";
        }
         
@@ -99,14 +123,14 @@ function Square(props) {
         <div className="game">
           <div className="game-board">
             <Board
-              squares={squares}
+              squares={current.squares}
               onClick={i => this.handleClick(i)}
               lines = {winInfo.lines}
             />
           </div>
           <div className="game-info">
             <div>{status}</div>
-            <button class="restart"onClick ={()=> this.restart()}>Restart</button>
+            <ol>{moves}</ol>
           </div>
         </div>
       );
