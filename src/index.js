@@ -106,7 +106,7 @@ function Square(props) {
           </div>
           <div className="game-info">
             <div>{status}</div>
-            <button class="restart"onClick ={()=> this.restart()}>Restart</button>
+            <button className="restart"onClick ={()=> this.restart()}>Restart</button>
           </div>
         </div>
       );
